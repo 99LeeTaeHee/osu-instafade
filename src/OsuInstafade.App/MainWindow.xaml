@@ -150,6 +150,29 @@
                                                 <ui:Button.Icon><ui:SymbolIcon Symbol="FolderOpen24" /></ui:Button.Icon>
                                             </ui:Button>
                                         </WrapPanel>
+                                        <!-- 원본 스킨 처리 -->
+                                        <Border Margin="0,12,0,0" Padding="0,10,0,0" BorderThickness="0,1,0,0"
+                                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                                Visibility="{Binding OriginalSectionVisibility}">
+                                            <StackPanel>
+                                                <StackPanel Visibility="{Binding OriginalChoiceVisibility}">
+                                                    <TextBlock FontSize="12" Text="원본 스킨은 어떻게 할까요?" />
+                                                    <TextBlock FontSize="11" Margin="0,1,0,0" TextTrimming="CharacterEllipsis" Text="{Binding SourcePath}"
+                                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                                    <WrapPanel Margin="0,8,0,0">
+                                                        <ui:Button Content="원본 지우기 (휴지통으로)" Appearance="Danger" Margin="0,0,8,0" Click="OnDeleteOriginal" Tag="{Binding}">
+                                                            <ui:Button.Icon><ui:SymbolIcon Symbol="Delete24" /></ui:Button.Icon>
+                                                        </ui:Button>
+                                                        <ui:Button Content="원본 그대로 두기" Click="OnKeepOriginal" Tag="{Binding}">
+                                                            <ui:Button.Icon><ui:SymbolIcon Symbol="Checkmark24" /></ui:Button.Icon>
+                                                        </ui:Button>
+                                                    </WrapPanel>
+                                                </StackPanel>
+                                                <TextBlock FontSize="12" TextWrapping="Wrap" Text="{Binding OriginalStatus}"
+                                                           Visibility="{Binding OriginalStatusVisibility}"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Grid>
                             </ui:Card>

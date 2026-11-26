@@ -343,7 +343,7 @@ public partial class MainWindow : FluentWindow
                         $"서클 색 {r.Analysis.CircleColor.ToHex()} · 숫자 그림 {r.NumberImageWidthHd}×{r.NumberImageHeightHd}(고화질)",
                     };
                     if (r.ComboCounterFixed) details.Add("콤보 카운터 숫자도 고쳤습니다.");
-                    _results.Add(ResultItem.Success($"완료: {Path.GetFileName(r.OutputPath)}", string.Join("\n", details), r.OutputPath));
+                    _results.Add(ResultItem.Success($"완료: {Path.GetFileName(r.OutputPath)}", string.Join("\n", details), r.OutputPath, input));
                 }
                 catch (Exception ex)
                 {
@@ -373,6 +373,47 @@ public partial class MainWindow : FluentWindow
         }
     }
 
+    private void OnDeleteOriginal(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.Tag is not ResultItem item || item.SourcePath is not string src) return;
+        bool isFolder = Directory.Exists(src);
+        if (!isFolder && !File.Exists(src))
+        {
+            item.OriginalStatus = "원본이 이미 없습니다.";
+            return;
+        }
+        bool inOsuSkins = OsuLocator.FindSkinsFolders().Any(d =>
+            Path.GetFullPath(src).StartsWith(Path.GetFullPath(d).TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase));
+
+        string msg = $"원본 스킨을 휴지통으로 옮길까요?\n\n{src}\n\n" +
+                     (inOsuSkins ? "osu!에 설치된 스킨 목록에서도 사라집니다.\n" : "") +
+                     "휴지통에서 다시 꺼낼 수 있습니다.";
+        if (System.Windows.MessageBox.Show(this, msg, "원본 지우기", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Question, System.Windows.MessageBoxResult.No)
+            != System.Windows.MessageBoxResult.Yes) return;
+
+        bool ok;
+        try { ok = RecycleBin.Send(src); }
+        catch { ok = false; }
+
+        if (ok)
+        {
+            item.OriginalStatus = $"원본을 휴지통으로 옮겼습니다. (휴지통에서 되살릴 수 있습니다)";
+            // 지운 원본이 선택 목록에 있으면 빼기
+            _inputs.RemoveAll(p => string.Equals(Path.GetFullPath(p).TrimEnd('\\'), Path.GetFullPath(src).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase));
+            if (_inputs.Count == 0) OnClearInputs(this, new RoutedEventArgs());
+        }
+        else
+        {
+            ShowNotice(InfoBarSeverity.Warning, "원본을 지우지 못했습니다",
+                "다른 프로그램(osu! 등)이 이 스킨을 쓰고 있지 않은지 확인한 뒤 다시 시도해 주세요.");
+        }
+    }
+
+    private void OnKeepOriginal(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.Tag is ResultItem item) item.OriginalStatus = "원본 스킨을 그대로 두었습니다.";
+    }
+
     private void OnOpenFolder(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is not string path) return;
@@ -398,6 +439,7 @@ public partial class MainWindow : FluentWindow
         }
         if (Environment.GetEnvironmentVariable("INSTAFADE_SNAPSHOT_EXPAND") == "1")
             foreach (var ex in FindChildren<CardExpander>(this)) ex.IsExpanded = true;
+        if (double.TryParse(Environment.GetEnvironmentVariable("INSTAFADE_SNAPSHOT_HEIGHT"), out var hh)) Height = hh;
         await Task.Delay(1200);
         var root = (FrameworkElement)Content;
         double dpi = 144;
@@ -446,18 +488,39 @@ public partial class MainWindow : FluentWindow
 }
 
 /// <summary>결과 목록 한 줄</summary>
-public sealed class ResultItem
+public sealed class ResultItem : INotifyPropertyChanged
 {
     public required string Title { get; init; }
     public required string Message { get; init; }
     public string? Path { get; init; }
+    /// <summary>원본 스킨(.osk 파일 또는 폴더) 경로</summary>
+    public string? SourcePath { get; init; }
     public SymbolRegular Icon { get; init; }
     public Brush IconBrush { get; init; } = Brushes.White;
     public Visibility ButtonsVisibility => Path != null ? Visibility.Visible : Visibility.Collapsed;
 
-    public static ResultItem Success(string title, string message, string path) => new()
+    private string? _originalStatus;
+    /// <summary>원본을 지웠거나 두기로 한 뒤 보여 줄 문구 (null 이면 아직 선택 전)</summary>
+    public string? OriginalStatus
     {
-        Title = title, Message = message, Path = path, Icon = SymbolRegular.CheckmarkCircle24,
+        get => _originalStatus;
+        set
+        {
+            _originalStatus = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OriginalStatus)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OriginalChoiceVisibility)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OriginalStatusVisibility)));
+        }
+    }
+    public Visibility OriginalSectionVisibility => Path != null && SourcePath != null ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility OriginalChoiceVisibility => _originalStatus == null ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility OriginalStatusVisibility => _originalStatus != null ? Visibility.Visible : Visibility.Collapsed;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public static ResultItem Success(string title, string message, string path, string sourcePath) => new()
+    {
+        Title = title, Message = message, Path = path, SourcePath = sourcePath, Icon = SymbolRegular.CheckmarkCircle24,
         IconBrush = new SolidColorBrush(Color.FromRgb(0x6C, 0xCB, 0x5F)),
     };
 
