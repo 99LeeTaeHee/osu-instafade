@@ -47,7 +47,7 @@ jobs:
           Copy-Item publish/OsuInstafade.exe out/osu-Instafade-by-LTH.exe
           (Get-FileHash out/osu-Instafade-by-LTH.exe -Algorithm SHA256).Hash | Tee-Object out/sha256.txt
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: osu-Instafade-by-LTH-${{ steps.ver.outputs.version }}
           path: out/
@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           path: out
           merge-multiple: true
