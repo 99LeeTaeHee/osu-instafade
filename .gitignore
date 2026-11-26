@@ -1,0 +1,12 @@
+# 빌드 결과
+bin/
+obj/
+publish_tmp/
+dist/
+*.user
+.vs/
+TestResults/
+
+# 스킨 파일 (다른 사람이 만든 스킨이므로 올리지 않음)
+*.osk
+*.zip

@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>OsuInstafade</AssemblyName>
+    <RootNamespace>OsuInstafade.App</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!-- 버전 / 저작자 정보 (by LTH) -->
+    <Version>1.0.0</Version>
+    <Product>osu! Instafade by LTH</Product>
+    <AssemblyTitle>osu! Instafade by LTH</AssemblyTitle>
+    <Company>LTH</Company>
+    <Authors>LTH</Authors>
+    <Copyright>© 2026 LTH</Copyright>
+    <Description>osu! 스킨의 서클 잔상을 버튼 하나로 없애 주는 프로그램 (by LTH)</Description>
+
+    <!-- exe 한 개: 실행 환경과 라이브러리를 모두 포함 -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>embedded</DebugType>
+    <SatelliteResourceLanguages>ko;en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OsuInstafade.Core\OsuInstafade.Core.csproj" />
+  </ItemGroup>
+
+</Project>
