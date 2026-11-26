@@ -48,7 +48,12 @@ dotnet publish src/OsuInstafade.App -c Release -o publish_tmp
 - `instafade.ps1` — 초기 버전 PowerShell 스크립트
 - `구현계획.md` — 구현 계획서
 
+## 라이선스
+[MIT License](LICENSE) — 자유롭게 쓰고, 고치고, 다시 배포할 수 있습니다 (저작권 표시는 유지).
 포함된 오픈 소스 라이선스는 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) 참고.
+
+## 자동 빌드
+GitHub Actions 가 올릴 때마다 빌드와 테스트를 하고, `v1.2.3` 같은 태그를 올리면 exe 를 만들어 Releases 에 자동으로 등록합니다 ([.github/workflows/build.yml](.github/workflows/build.yml)).
 
 ---
 made by LTH

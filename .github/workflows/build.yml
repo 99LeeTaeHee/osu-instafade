@@ -1,0 +1,105 @@
+# osu! Instafade (by LTH) — 자동 빌드 / 릴리스
+#  - main 에 올릴 때와 PR: 빌드 + 자동 테스트
+#  - v1.2.3 같은 태그를 올릴 때: 빌드 + 테스트 + exe 만들어 GitHub Release 에 자동 등록
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: 자동 테스트
+        run: dotnet test tests/OsuInstafade.Tests -c Release
+
+      - name: 버전 정하기
+        id: ver
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") { $v = "${{ github.ref_name }}".TrimStart('v') }
+          else {
+            $xml = [xml](Get-Content src/OsuInstafade.App/OsuInstafade.App.csproj)
+            $v = ($xml.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version
+          }
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: exe 한 개로 묶기
+        run: dotnet publish src/OsuInstafade.App -c Release -o publish -p:Version=${{ steps.ver.outputs.version }}
+
+      - name: 이름 정리 + 지문(SHA-256)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item publish/OsuInstafade.exe out/osu-Instafade-by-LTH.exe
+          (Get-FileHash out/osu-Instafade-by-LTH.exe -Algorithm SHA256).Hash | Tee-Object out/sha256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: osu-Instafade-by-LTH-${{ steps.ver.outputs.version }}
+          path: out/
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: 릴리스 설명 만들기 (CHANGELOG 에서 해당 버전 부분)
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}".TrimStart('v')
+          $lines = Get-Content CHANGELOG.md -Encoding utf8
+          $start = ($lines | Select-String -Pattern "^## \[$([regex]::Escape($v))\]").LineNumber
+          $section = @()
+          if ($start) {
+            foreach ($l in $lines[$start..($lines.Count - 1)]) {
+              if ($l -match '^## \[' -or $l -match '^\[.+\]:\s') { break }
+              $section += $l
+            }
+          }
+          $hash = (Get-Content out/sha256.txt).Trim()
+          $body = @(
+            "## osu! Instafade v$v — 서클 잔상 제거기 by LTH", "",
+            ($section -join "`n").Trim(), "",
+            "### 받는 법",
+            "아래 **Assets** 의 ``osu-Instafade-by-LTH.exe`` 를 받아 실행하세요. 설치 필요 없음 · Windows 10/11 (64비트)", "",
+            "처음 실행할 때 ""Windows의 PC 보호"" 창이 뜨면 **[추가 정보] → [실행]**", "",
+            "SHA-256: ``$hash``"
+          ) -join "`n"
+          Set-Content notes.md $body -Encoding utf8
+
+      - name: GitHub Release 등록
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag out/osu-Instafade-by-LTH.exe --clobber
+            gh release edit $tag --notes-file notes.md
+          } else {
+            gh release create $tag out/osu-Instafade-by-LTH.exe --title "osu! Instafade $tag" --notes-file notes.md
+          }
