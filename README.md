@@ -30,6 +30,10 @@ osu!는 서클을 치면 서클 그림(`hitcircle`, `hitcircleoverlay`)은 퍼�
 - 콤보 색은 한 가지만 쓸 수 있습니다 (색을 그림에 미리 입히기 때문)
 - osu!lazer는 설정의 "Hit animations"를 끄면 되므로 이 프로그램은 osu!(stable)용입니다
 
+## 버전과 변경 기록
+버전 번호는 [유의적 버전(SemVer)](https://semver.org/lang/ko/) `주.부.수` 규칙을 따릅니다 — 버그 수정은 수(1.0.**1**), 새 기능은 부(1.**1**.0), 호환이 깨지는 큰 변경은 주(**2**.0.0).
+바뀐 내용은 [CHANGELOG.md](CHANGELOG.md) 와 [Releases](../../releases) 에서 볼 수 있습니다.
+
 ## 직접 빌드하기
 .NET 8 SDK 필요
 ```
