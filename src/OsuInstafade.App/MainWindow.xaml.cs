@@ -120,6 +120,7 @@ public partial class MainWindow : FluentWindow
         _inputs.Clear();
         _analysis = null;
         _analysisVersion++;
+        ResetCustomColor();
         SkinCard.Visibility = Visibility.Collapsed;
         NoticeBar.IsOpen = false;
         RunButton.IsEnabled = false;
@@ -150,6 +151,7 @@ public partial class MainWindow : FluentWindow
         _inputs.Clear();
         _inputs.AddRange(valid);
         _results.Clear();
+        ResetCustomColor(); // 이전 스킨에서 고른 색이 새 스킨에 남지 않게
         SkinCard.Visibility = Visibility.Visible;
         QueueList.Visibility = _inputs.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
         QueueList.ItemsSource = _inputs.Select((p, i) => $"{i + 1}. {Path.GetFileName(p.TrimEnd('\\', '/'))}").ToList();
@@ -294,9 +296,14 @@ public partial class MainWindow : FluentWindow
 
     private async void OnResetColor(object sender, RoutedEventArgs e)
     {
+        ResetCustomColor();
+        await RefreshAnalysisAsync();
+    }
+
+    private void ResetCustomColor()
+    {
         _customColor = null;
         CustomColorBox.Text = "";
-        await RefreshAnalysisAsync();
     }
 
     private void OnPickOutputDir(object sender, RoutedEventArgs e)

@@ -214,6 +214,28 @@ public class EngineTests
         AssertInstafaded(o);
         Assert.Equal("NoIni (instafade)", o.Ini().Get("Name"));
         Assert.Equal("255,192,0", o.Ini().Get("Combo1"));
+        Assert.Equal("latest", o.Ini().Get("Version", "General")); // 없으면 osu! 가 1.0 으로 취급
+    }
+
+    [Fact] // 6-2. skin.ini 가 있으면 Version 은 원본 그대로 (없으면 없는 채로)
+    public void ExistingIniVersionUntouched()
+    {
+        using var s = new FakeSkin().Standard().Ini("[General]\nName: Old\n");
+        var o = Out.ReadOsk(InstafadeEngine.Run(s.WriteOsk(), new InstafadeOptions()).OutputPath);
+        Assert.Null(o.Ini().Get("Version"));
+    }
+
+    [Fact] // 6-3. 값 뒤 인라인 주석 (// ...) 은 osu! 처럼 무시
+    public void InlineCommentsIgnored()
+    {
+        var ini = SkinIni.Parse(Encoding.UTF8.GetBytes("[Fonts]\nHitCirclePrefix: num // 숫자\nHitCircleOverlayAboveNumber: 0 // 아래\n"));
+        Assert.Equal("num", ini.Get("HitCirclePrefix"));
+        Assert.Equal("0", ini.Get("HitCircleOverlayAboveNumber"));
+
+        using var s = new FakeSkin().Standard(true, "num").Ini("[General]\nName: Cmt\n[Fonts]\nHitCirclePrefix: num // 숫자\n");
+        var r = InstafadeEngine.Run(s.WriteOsk(), new InstafadeOptions());
+        Assert.True(r.Analysis.HasOwnNumbers);
+        AssertInstafaded(Out.ReadOsk(r.OutputPath), "num");
     }
 
     [Fact] // 6. 한국어 ANSI(CP949) skin.ini + 깨진 줄

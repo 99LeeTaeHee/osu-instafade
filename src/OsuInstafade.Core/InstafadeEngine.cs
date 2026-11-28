@@ -258,6 +258,8 @@ public static class InstafadeEngine
         if (ini.Get("HitCirclePrefix") == null) ini.AddToSection("Fonts", $"HitCirclePrefix: {prefix}");
         string newName = name.EndsWith(NameSuffix.Trim(), StringComparison.OrdinalIgnoreCase) ? name : name + NameSuffix;
         ini.Set("General", "Name", newName);
+        // skin.ini 가 없던 스킨은 osu! 가 latest 로 취급함. 새로 만든 skin.ini 에 Version 이 없으면 1.0(옛 방식)이 되므로 명시
+        if (!src.Exists("skin.ini")) ini.Set("General", "Version", "latest");
 
         if (opt.FixComboCounter && analysis.ComboCounterBroken)
         {

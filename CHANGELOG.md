@@ -12,6 +12,13 @@
 
 문서만 바뀐 경우에는 새 릴리스를 만들지 않습니다.
 
+## [1.1.1] - 2026-11-28
+### 수정
+- skin.ini 값 뒤에 붙은 주석(`HitCirclePrefix: default // 숫자` 등)을 osu! 와 같이 무시
+  - 전에는 주석까지 이름으로 읽어, 숫자 그림이 엉뚱한 곳에 저장되고 게임에서 서클이 보이지 않을 수 있었음
+- skin.ini 가 없던 스킨에 `Version: latest` 를 넣음 (빠지면 osu! 가 옛 1.0 방식으로 그림)
+- 다른 스킨을 불러오거나 선택을 지우면, 앞 스킨에서 고른 서클 색이 초기화됨
+
 ## [1.1.0] - 2026-11-26
 ### 추가
 - 새 스킨을 만든 뒤 결과 카드에서 **원본 스킨 지우기 / 그대로 두기** 선택 버튼
@@ -29,5 +36,6 @@
 - 고급 설정: 숫자 표시 끄기, 서클 색 선택, 콤보 카운터 자동 복구, 히트 라이팅 끄기, 저장 위치
 - 고화질(@2x)·일반 화질, 움직이는 테두리, 슬라이더 시작 원, 하위 폴더 숫자, 그림 없는 스킨, 한국어 skin.ini 대응
 
+[1.1.1]: https://github.com/99LeeTaeHee/osu-instafade/releases/tag/v1.1.1
 [1.1.0]: https://github.com/99LeeTaeHee/osu-instafade/releases/tag/v1.1.0
 [1.0.0]: https://github.com/99LeeTaeHee/osu-instafade/releases/tag/v1.0.0

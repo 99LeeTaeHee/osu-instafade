@@ -71,7 +71,11 @@ public sealed class SkinIni
             int colon = t.IndexOf(':');
             if (colon <= 0) continue;
             string key = t[..colon].Trim();
-            string value = t[(colon + 1)..].Trim();
+            string value = t[(colon + 1)..];
+            // osu! 와 같이 값 뒤의 인라인 주석(// ...)은 무시
+            int comment = value.IndexOf("//", StringComparison.Ordinal);
+            if (comment >= 0) value = value[..comment];
+            value = value.Trim();
             yield return new Entry(i, section, key, value);
         }
     }
